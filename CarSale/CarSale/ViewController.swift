@@ -10,12 +10,12 @@ import UIKit
 import MessageUI
 
 class ViewController: UIViewController,MFMailComposeViewControllerDelegate ,UITextFieldDelegate{
-
+    
     @IBOutlet weak var emailTextField: UITextField!
     @IBOutlet weak var passwordTextField: UITextField!
     @IBOutlet weak var usernameTextField: UITextField!
     @IBOutlet weak var signupButton: UIButton!
-        
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         signupButton.layer.borderWidth = 1
@@ -30,7 +30,7 @@ class ViewController: UIViewController,MFMailComposeViewControllerDelegate ,UITe
         textField.resignFirstResponder()
         return true
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -40,6 +40,7 @@ class ViewController: UIViewController,MFMailComposeViewControllerDelegate ,UITe
         if MFMailComposeViewController.canSendMail() {
             let mail = MFMailComposeViewController()
             mail.mailComposeDelegate = self
+            mail.setToRecipients([emailTextField.text!])
             mail.setMessageBody(text, isHTML: true)
             
             self.present(mail, animated: true)
@@ -53,13 +54,13 @@ class ViewController: UIViewController,MFMailComposeViewControllerDelegate ,UITe
     internal func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
         controller.dismiss(animated: true)
     }
-
-
+    
+    
     @IBAction func signupButtonPressed(_ sender: Any) {
-        sendEmail(text: "Tralalal")
+        sendEmail(text: "Hey" + usernameTextField.text! + ", welcome to CarSale")
         self.dismiss(animated: true, completion: nil)
         
     }
-
+    
 }
 
