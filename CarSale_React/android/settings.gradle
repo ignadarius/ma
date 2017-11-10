@@ -1,0 +1,3 @@
+rootProject.name = 'CarSale_React'
+
+include ':app'
