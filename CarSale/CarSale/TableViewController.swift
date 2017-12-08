@@ -7,20 +7,56 @@
 //
 
 import UIKit
+import os.log
 
-class TableViewController: UITableViewController {
+protocol AnnouncementDelegate: class{
+    func changed(ann: Announcement!)
+    func add(ann: Announcement!)
+}
+
+class TableViewController: UITableViewController, AnnouncementDelegate {
+    func add(ann: Announcement!) {
+        self.announcements.append(ann)
+        self.tableView.reloadData()
+        self.saveAnnouncements()
+    }
+    
+    
+    func changed(ann: Announcement!) {
+        let index = self.tableView.indexPathForSelectedRow
+        if(index != nil)
+        {
+            self.announcements[(index?.row)!] = ann
+            self.tableView.reloadData()
+            saveAnnouncements()
+        }
+    }
+    
+    private func saveAnnouncements(){
+        let isSuccessfulSave = NSKeyedArchiver.archiveRootObject(announcements, toFile: Announcement.ArchiveURL.path)
+        if isSuccessfulSave {
+            os_log("Announcements successfully saved.", log: OSLog.default, type: .debug)
+        } else {
+            os_log("Failed to save announcements...", log: OSLog.default, type: .error)
+        }
+    }
+    
+    private func loadAnnouncements() -> [Announcement]?  {
+        return NSKeyedUnarchiver.unarchiveObject(withFile: Announcement.ArchiveURL.path) as? [Announcement]
+    }
+    
     
     
     var announcements = [Announcement]()
     
-    func loadAnnouncements()
+    func loadAnnouncements1()
     {
         let photo1 = UIImage(named: "car1")
         let photo2 = UIImage(named: "car2")
         let photo3 = UIImage(named: "car3")
         guard let a1 = Announcement(id: 1, date: Date(), image: photo1!,
                                     title: "Audi A4",userID: 1,
-                                    description:"Audi A4 din 2005 Navi Full Option",
+                                    descriptionn:"Audi A4 din 2005 Navi Full Option",
                                     price: 5000,
                                     location:"Cluj-Napoca" )
             else {
@@ -29,7 +65,7 @@ class TableViewController: UITableViewController {
         
         guard let a2 = Announcement(id: 2, date: Date(), image: photo2!,
                                     title: "BMW 320D",userID: 1,
-                                    description:"BMW 320D Automatic 2006 accident-free",
+                                    descriptionn:"BMW 320D Automatic 2006 accident-free",
                                     price: 5400,
                                     location:"Cluj-Napoca" )
             else {
@@ -38,7 +74,7 @@ class TableViewController: UITableViewController {
         
         guard let a3 = Announcement(id: 3, date: Date(), image: photo3!,
                                     title: "Dacia Logan",userID: 1,
-                                    description:"Dacia Logan 2008 leather, navigation",
+                                    descriptionn:"Dacia Logan 2008 leather, navigation",
                                     price: 6000,
                                     location:"Cluj-Napoca" )
             else {
@@ -51,7 +87,19 @@ class TableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        loadAnnouncements()
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Add",
+                                                                 style: UIBarButtonItemStyle.plain, target: self, action: #selector(createAnn(item:)))
+        
+        navigationItem.leftBarButtonItem = editButtonItem
+        
+        if let savedAnn = loadAnnouncements() {
+            announcements += savedAnn
+        }
+        if announcements.isEmpty
+        {
+            // Load the sample data.
+            loadAnnouncements1()
+        }
         
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
@@ -102,11 +150,37 @@ class TableViewController: UITableViewController {
         return announcements.count
     }
     
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "showDetails"
+        {
+            if let destinationVC = segue.destination as? CarDetailsViewController {
+                destinationVC.ann = self.announcements[(self.tableView.indexPathForSelectedRow?.row)!]
+                destinationVC.delegate = self
+            }
+        }
+        else if segue.identifier == "addView"
+        {
+            if let destinationVC = segue.destination as? AddViewController {
+                destinationVC.delegate = self
+            }
+        }
+        
+    }
+    
+    func getPrices()->[Int]{
+        var prices = [Int]()
+        for ann in announcements {
+            prices.append(ann.price)
+        }
+        return prices
+    }
+    
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let carDetailsController = storyboard?.instantiateViewController(withIdentifier: "carDetails") as! CarDetailsViewController
-        let ann = announcements[indexPath.row];
-        carDetailsController.ann = ann;
-        navigationController?.pushViewController(carDetailsController, animated: true)
+        performSegue(withIdentifier: "showDetails", sender: self)
+    }
+    
+    @objc fileprivate func createAnn(item: UIBarButtonItem){
+        performSegue(withIdentifier: "addView", sender: self)
     }
     
     /*
@@ -127,17 +201,26 @@ class TableViewController: UITableViewController {
      }
      */
     
-    /*
-     // Override to support editing the table view.
-     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-     if editingStyle == .delete {
-     // Delete the row from the data source
-     tableView.deleteRows(at: [indexPath], with: .fade)
-     } else if editingStyle == .insert {
-     // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-     }
-     }
-     */
+    // Override to support editing the table view.
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            // Delete the row from the data source
+            announcements.remove(at: indexPath.row)
+            saveAnnouncements()
+            tableView.deleteRows(at: [indexPath], with: .fade)
+        } else if editingStyle == .insert {
+            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
+        }
+    }
+    
+    override func setEditing(_ editing: Bool, animated: Bool) {
+        // Toggles the edit button state
+        super.setEditing(editing, animated: animated)
+        // Toggles the actual editing actions appearing on a table view
+        tableView.setEditing(editing, animated: true)
+        navigationItem.rightBarButtonItem?.isEnabled = !(navigationItem.rightBarButtonItem?.isEnabled)!
+    }
+
     
     /*
      // Override to support rearranging the table view.

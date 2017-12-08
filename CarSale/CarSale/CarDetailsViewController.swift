@@ -8,7 +8,10 @@
 
 import UIKit
 
+
 class CarDetailsViewController: ViewController {
+    
+    weak var delegate: TableViewController!
     
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var priceLabel: UILabel!
@@ -16,12 +19,39 @@ class CarDetailsViewController: ViewController {
     @IBOutlet weak var dateLabel: UILabel!
     @IBOutlet weak var descriptionTextView: UITextView!
     @IBOutlet weak var imageView: UIImageView!
+    @IBOutlet weak var chartsView: UIView!
     
     var ann: Announcement = Announcement()
     override func viewDidLoad() {
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Edit",
                                                                  style: UIBarButtonItemStyle.plain, target: self, action: #selector(editTapped(item:)))
         
+        loadAnnouncement();
+        setupBarCharts()
+
+        // Do any additional setup after loading the view.
+    }
+    
+    fileprivate func setupBarCharts() {
+        let view = BasicBarChart.init(frame: self.chartsView.bounds)
+        let prices = delegate.getPrices().sorted()
+        var entries = [BarEntry]()
+        for price in prices {
+            if price < ann.price
+            {
+                entries.append(BarEntry(color: .blue, height: Float(price/10000), textValue: price.description, title: ""))
+            }
+            else
+            {
+                entries.append(BarEntry(color: .red, height: Float(price/10000), textValue: price.description, title: ""))
+            }
+        }
+        view.dataEntries = entries
+        
+        self.chartsView.addSubview(view)
+    }
+    
+    fileprivate func loadAnnouncement(){
         self.titleLabel.text = ann.title
         self.imageView.image = ann.image
         self.priceLabel.text = "Price:"+ann.price.description + "€"
@@ -29,10 +59,19 @@ class CarDetailsViewController: ViewController {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MM/dd/yy"
         self.dateLabel.text = "Date:" + dateFormatter.string(for: ann.date)!
-        self.descriptionTextView.text = ann.description;
-
-
-        // Do any additional setup after loading the view.
+        self.descriptionTextView.text = ann.descriptionn;
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        loadAnnouncement()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        if self.isMovingFromParentViewController {
+            delegate.changed(ann: self.ann)
+        }
     }
     
     @objc fileprivate func editTapped(item: UIBarButtonItem) {

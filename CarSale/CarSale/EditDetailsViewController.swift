@@ -21,7 +21,7 @@ class EditDetailsViewController: ViewController {
         titleTextField.text = ann.title
         priceTextField.text = ann.price.description
         locationTextField.text = ann.location
-        descriptionTextView.text = ann.description
+        descriptionTextView.text = ann.descriptionn
         
         descriptionTextView!.layer.borderWidth = 1
         descriptionTextView!.layer.borderColor = UIColor.black.cgColor
@@ -36,11 +36,11 @@ class EditDetailsViewController: ViewController {
     @objc fileprivate func saveTapped(item: UIBarButtonItem){
         let carDetailsController = storyboard?.instantiateViewController(withIdentifier: "carDetails") as! CarDetailsViewController
         ann.title = titleTextField.text!
-        ann.description = descriptionTextView.text!
+        ann.descriptionn = descriptionTextView.text!
         ann.price = Int(priceTextField.text!)!
         ann.location = locationTextField.text!
         carDetailsController.ann = self.ann
-        navigationController?.pushViewController(carDetailsController, animated: true)
+        self.navigationController?.popViewController(animated: true)
     }
 
     override func didReceiveMemoryWarning() {
