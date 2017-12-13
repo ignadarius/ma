@@ -9,6 +9,8 @@
 import UIKit
 import os.log
 
+let kAnouncementsSave = "kAnouncementsSave"
+
 protocol AnnouncementDelegate: class{
     func changed(ann: Announcement!)
     func add(ann: Announcement!)
@@ -33,16 +35,27 @@ class TableViewController: UITableViewController, AnnouncementDelegate {
     }
     
     private func saveAnnouncements(){
-        let isSuccessfulSave = NSKeyedArchiver.archiveRootObject(announcements, toFile: Announcement.ArchiveURL.path)
-        if isSuccessfulSave {
-            os_log("Announcements successfully saved.", log: OSLog.default, type: .debug)
-        } else {
-            os_log("Failed to save announcements...", log: OSLog.default, type: .error)
+        var datas = [Data]()
+        for announcement in announcements {
+            let data = NSKeyedArchiver.archivedData(withRootObject: announcement)
+            datas.append(data)
         }
+        
+        UserDefaults.standard.setValue(datas, forKey: kAnouncementsSave)
     }
     
-    private func loadAnnouncements() -> [Announcement]?  {
-        return NSKeyedUnarchiver.unarchiveObject(withFile: Announcement.ArchiveURL.path) as? [Announcement]
+    private func loadAnnouncements() -> [Announcement]  {
+        if let data = UserDefaults.standard.object(forKey: kAnouncementsSave) as? [Data] {
+            var datas = [Announcement]()
+            for item in data {
+                let announcementData = NSKeyedUnarchiver.unarchiveObject(with: item)
+                datas.append(announcementData as! Announcement)
+            }
+            
+            return datas
+        }
+        
+        return []
     }
     
     
@@ -92,9 +105,8 @@ class TableViewController: UITableViewController, AnnouncementDelegate {
         
         navigationItem.leftBarButtonItem = editButtonItem
         
-        if let savedAnn = loadAnnouncements() {
-            announcements += savedAnn
-        }
+//        let saved = loadAnnouncements()
+//        announcements += saved
         if announcements.isEmpty
         {
             // Load the sample data.

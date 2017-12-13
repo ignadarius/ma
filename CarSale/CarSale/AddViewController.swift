@@ -48,6 +48,8 @@ class AddViewController: UIViewController, UIImagePickerControllerDelegate, UINa
         if (imageView.image != nil)
         {
             ann.image = imageView.image!
+        } else {
+            ann.image = UIImage()
         }
         self.delegate.add(ann: ann)
         self.navigationController?.popViewController(animated: true)

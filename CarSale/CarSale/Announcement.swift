@@ -27,34 +27,36 @@ struct PropertyKey {
 
 class Announcement: NSObject, NSCoding{
     
+    static let url = URL(fileURLWithPath: "/Users/dariusi/")
+    
     static let DocumentsDirectory = FileManager().urls(for: .documentDirectory, in: .userDomainMask).first!
-    static let ArchiveURL = DocumentsDirectory.appendingPathComponent("announcements")
+    static let ArchiveURL = url.appendingPathComponent("announcements")
     
     func encode(with aCoder: NSCoder) {
-        aCoder.encode(id, forKey: PropertyKey.id)
-        aCoder.encode(date, forKey: PropertyKey.date)
-        aCoder.encode(image, forKey: PropertyKey.image)
-        aCoder.encode(userID, forKey: PropertyKey.userID)
-        aCoder.encode(descriptionn, forKey: PropertyKey.descriptionn)
-        aCoder.encode(location, forKey: PropertyKey.location)
-        aCoder.encode(price, forKey: PropertyKey.price)
-        aCoder.encode(title, forKey: PropertyKey.title)
+        aCoder.encode(id, forKey: "id")
+        aCoder.encode(date, forKey: "date")
+        aCoder.encode(image, forKey: "image")
+        aCoder.encode(userID, forKey: "userID")
+        aCoder.encode(descriptionn, forKey: "descriptionn")
+        aCoder.encode(location, forKey: "location")
+        aCoder.encode(price, forKey: "price")
+        aCoder.encode(title, forKey: "title")
     }
     
     required convenience init?(coder aDecoder: NSCoder) {
-        guard (aDecoder.decodeObject(forKey: PropertyKey.title) as? String) != nil else {
+        guard (aDecoder.decodeObject(forKey: "title") as? String) != nil else {
             os_log("Unable to decode the title for a Announcement object.", log: OSLog.default, type: .debug)
             return nil
         }
         
-        let date = aDecoder.decodeObject(forKey: PropertyKey.date)
-        let image = aDecoder.decodeObject(forKey: PropertyKey.image)
-        let title = aDecoder.decodeObject(forKey: PropertyKey.title)
-        let descriptionn = aDecoder.decodeObject(forKey: PropertyKey.descriptionn)
-        let location = aDecoder.decodeObject(forKey: PropertyKey.location)
-        let id = aDecoder.decodeInteger(forKey: PropertyKey.id)
-        let userID = aDecoder.decodeInteger(forKey: PropertyKey.userID)
-        let price = aDecoder.decodeInteger(forKey: PropertyKey.price)
+        let date = aDecoder.decodeObject(forKey: "date")
+        let image = aDecoder.decodeObject(forKey: "image")
+        let title = aDecoder.decodeObject(forKey: "title")
+        let descriptionn = aDecoder.decodeObject(forKey: "descriptionn")
+        let location = aDecoder.decodeObject(forKey: "location")
+        let id = aDecoder.decodeInteger(forKey: "id")
+        let userID = aDecoder.decodeInteger(forKey: "userID")
+        let price = aDecoder.decodeInteger(forKey: "price")
         
         self.init(id: id,date: date as! Date,image: image as! UIImage,title: title as! String,userID: userID,descriptionn: descriptionn as! String,price: price,location: location as! String)
     }

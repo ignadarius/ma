@@ -37,13 +37,18 @@ class CarDetailsViewController: ViewController {
         let prices = delegate.getPrices().sorted()
         var entries = [BarEntry]()
         for price in prices {
+            let p = Float(price)/10000
             if price < ann.price
             {
-                entries.append(BarEntry(color: .blue, height: Float(price/10000), textValue: price.description, title: ""))
+                entries.append(BarEntry(color: .blue, height: p, textValue: price.description, title: ""))
+            }
+            else if price == ann.price
+            {
+                entries.append(BarEntry(color: .black, height: p, textValue: price.description, title: ""))
             }
             else
             {
-                entries.append(BarEntry(color: .red, height: Float(price/10000), textValue: price.description, title: ""))
+                entries.append(BarEntry(color: .red, height: p, textValue: price.description, title: ""))
             }
         }
         view.dataEntries = entries
